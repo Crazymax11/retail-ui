@@ -1,7 +1,249 @@
-import { css, cssName, keyframes, memoizeStyle } from '../../lib/theming/Emotion';
+import { css, keyframes /*memoizeStyle*/ } from '../../lib/theming/Emotion';
 import { Theme } from '../../lib/theming/Theme';
 import { shift } from '../../lib/styles/DimensionFunctions';
 import { resetText } from '../../lib/styles/Mixins';
+import { isIE11, isEdge } from '../../lib/utils';
+
+import { InputProps, InputState } from './Input';
+
+export interface InputStylesProps {
+  t: Theme;
+  size: InputProps['size'];
+  borderless: InputProps['borderless'];
+  warning: InputProps['warning'];
+  error: InputProps['error'];
+  focus: InputState['focused'];
+  disabled: InputProps['disabled'];
+}
+
+const getRootBackground = (p: InputStylesProps): string => {
+  const { t, disabled } = p;
+  switch (true) {
+    case disabled:
+      return t.inputDisabledBg;
+    default:
+      return t.inputBg;
+  }
+};
+
+const getRootBoxShadow = (p: InputStylesProps): string => {
+  const { t, borderless, focus, error, warning, disabled } = p;
+  switch (true) {
+    case borderless:
+    case disabled:
+      return 'none';
+    case (error || warning) && (isIE11 || isEdge):
+      return 'none';
+    case error:
+      return `0 0 0 ${t.inputOutlineWidth} ${t.inputBorderColorError}`;
+    case warning:
+      return `0 0 0 ${t.inputOutlineWidth} ${t.inputBorderColorWarning}`;
+    case focus && (isIE11 || isEdge):
+      return 'none';
+    case focus:
+      return t.inputFocusShadow;
+    default:
+      return t.inputShadow;
+  }
+};
+
+const getRootBorderColor = (p: InputStylesProps): string => {
+  const { t, borderless, focus, error, warning, disabled } = p;
+  switch (true) {
+    case borderless:
+      return 'transparent';
+    case disabled:
+      return t.inputDisabledBorderColor;
+    case error:
+      return t.inputBorderColorError;
+    case warning:
+      return t.inputBorderColorWarning;
+    case focus:
+      return t.inputBorderColorFocus;
+    default:
+      return `${t.inputBorderTopColor} ${t.inputBorderColor} ${t.inputBorderColor}`;
+  }
+};
+
+const getRootOutline = (p: InputStylesProps): string => {
+  const { t, focus, warning, error } = p;
+  switch (true) {
+    case error && (isIE11 || isEdge):
+      return `${t.inputBorderWidth} solid ${t.inputBorderColorError}`;
+    case warning && (isIE11 || isEdge):
+      return `${t.inputBorderWidth} solid ${t.inputBorderColorWarning}`;
+    case focus && (isIE11 || isEdge):
+      return `${t.inputOutlineWidth} solid ${t.inputFocusOutline}`;
+    case focus:
+    default:
+      return 'none';
+  }
+};
+
+const getRootZIndex = (p: InputStylesProps): string => {
+  const { focus, error, warning } = p;
+  switch (true) {
+    case focus:
+    case error:
+    case warning:
+      return '2';
+    default:
+      return 'inherit';
+  }
+};
+
+const getRootFontSize = (p: InputStylesProps): string => {
+  const { t, size } = p;
+  switch (size) {
+    case 'large':
+      return t.inputFontSizeLarge;
+    case 'medium':
+      return t.inputFontSizeMedium;
+    case 'small':
+    default:
+      return t.inputFontSizeSmall;
+  }
+};
+
+const getRootLineHeight = (p: InputStylesProps): string => {
+  const { t, size } = p;
+
+  if (isIE11 || isEdge) {
+    return 'normal';
+  }
+
+  switch (size) {
+    case 'large':
+      return t.inputLineHeightLarge;
+    case 'medium':
+      return t.inputLineHeightMedium;
+    case 'small':
+    default:
+      return t.inputLineHeightSmall;
+  }
+};
+
+const getRootHeight = (p: InputStylesProps): string => {
+  const { t, size } = p;
+  switch (size) {
+    case 'large':
+      return t.inputHeightLarge;
+    case 'medium':
+      return t.inputHeightMedium;
+    case 'small':
+    default:
+      return t.inputHeightSmall;
+  }
+};
+
+const getRootPaddingY = (p: InputStylesProps): string => {
+  const { t, size } = p;
+  switch (size) {
+    case 'large':
+      return t.inputPaddingYLarge;
+    case 'medium':
+      return t.inputPaddingYMedium;
+    case 'small':
+    default:
+      return t.inputPaddingYSmall;
+  }
+};
+
+const getRootPaddingX = (p: InputStylesProps): string => {
+  const { t, size } = p;
+  switch (size) {
+    case 'large':
+      return t.inputPaddingXLarge;
+    case 'medium':
+      return t.inputPaddingXMedium;
+    case 'small':
+    default:
+      return t.inputPaddingXSmall;
+  }
+};
+
+const getRootPaddingTop = (p: InputStylesProps): string => {
+  let paddingTop = getRootPaddingY(p);
+
+  if (p.size === 'large') {
+    paddingTop = shift(paddingTop, '-1');
+  }
+  if (isIE11 || isEdge) {
+    paddingTop = shift(paddingTop, '-1');
+  }
+
+  return paddingTop;
+};
+
+const getRootPaddingBottom = (p: InputStylesProps): string => {
+  let paddingBottom = getRootPaddingY(p);
+
+  if (p.size === 'large') {
+    paddingBottom = shift(paddingBottom, '1');
+  }
+  if (isIE11 || isEdge) {
+    paddingBottom = shift(paddingBottom, '1');
+  }
+
+  return paddingBottom;
+};
+
+const getRootBorderRadius = (p: InputStylesProps): string => {
+  const { t, size } = p;
+  switch (size) {
+    case 'large':
+      return t.inputBorderRadiusLarge;
+    case 'medium':
+      return t.inputBorderRadiusMedium;
+    case 'small':
+    default:
+      return t.inputBorderRadiusSmall;
+  }
+};
+
+const getPlaceholderColor = (p: InputStylesProps): string => {
+  const { t, focus } = p;
+  return focus ? t.inputPlaceholderColorLight : t.inputPlaceholderColor;
+};
+
+const getInputColor = (p: InputStylesProps): string => {
+  const { t, disabled } = p;
+  return disabled ? t.inputTextColorDisabled : t.inputTextColor;
+};
+
+const getInputPointerEvents = (p: InputStylesProps): string => {
+  return p.disabled ? 'none' : 'inherit';
+};
+
+const getIconWidth = (p: InputStylesProps): string => {
+  const { t, size } = p;
+  switch (size) {
+    case 'large':
+      return t.inputIconSizeLarge;
+    case 'medium':
+      return t.inputIconSizeMedium;
+    case 'small':
+    default:
+      return t.inputIconSizeSmall;
+  }
+};
+
+const getIconPaddingX = (p: InputStylesProps): string => {
+  const { t, size } = p;
+  switch (size) {
+    case 'large':
+      return t.inputIconGapLarge;
+    case 'medium':
+      return t.inputIconGapMedium;
+    case 'small':
+    default:
+      return t.inputIconGapSmall;
+  }
+};
+
+const getIconCursor = (p: InputStylesProps): string => {
+  return p.disabled ? 'default' : 'text';
+};
 
 const styles = {
   wrapper() {
@@ -24,23 +266,35 @@ const styles = {
     `;
   },
 
-  root(t: Theme) {
+  root(p: InputStylesProps) {
+    const { t } = p;
     return css`
       ${resetText()};
 
       align-items: center;
       background-clip: padding-box;
-      background-color: ${t.inputBg};
-      border: ${t.inputBorderWidth} solid ${t.inputBorderColor};
-      border-top-color: ${t.inputBorderTopColor};
-      box-shadow: ${t.inputShadow};
+      background-color: ${getRootBackground(p)};
+      border-width: ${t.inputBorderWidth};
+      border-style: solid;
+      border-color: ${getRootBorderColor(p)};
+      box-shadow: ${getRootBoxShadow(p)};
       box-sizing: border-box;
       color: ${t.inputColor};
       cursor: text;
       display: inline-flex;
-      outline: none;
+      outline: ${getRootOutline(p)};
       position: relative;
       width: ${t.inputWidth};
+      z-index: ${getRootZIndex(p)};
+
+      font-size: ${getRootFontSize(p)};
+      line-height: ${getRootLineHeight(p)};
+      height: ${getRootHeight(p)};
+      padding-top: ${getRootPaddingTop(p)};
+      padding-bottom: ${getRootPaddingBottom(p)};
+      padding-left: ${getRootPaddingX(p)};
+      padding-right: ${getRootPaddingX(p)};
+      border-radius: ${getRootBorderRadius(p)};
 
       & * {
         box-sizing: border-box;
@@ -48,49 +302,10 @@ const styles = {
     `;
   },
 
-  borderless() {
-    return css`
-      box-shadow: none !important;
-      border-color: transparent !important;
-    `;
-  },
-
-  useDefaultColor(t: Theme) {
-    return css`
-      color: ${t.inputIconColor};
-    `;
-  },
-
-  focus(t: Theme) {
-    return css`
-      border-color: ${t.inputBorderColorFocus};
-      box-shadow: ${t.inputFocusShadow};
-      outline: none;
-      z-index: 2;
-
-      ${cssName(styles.input(t))}:-moz-placeholder {
-        color: ${t.inputPlaceholderColorLight};
-      }
-      ${cssName(styles.input(t))}::-moz-placeholder {
-        color: ${t.inputPlaceholderColorLight};
-      }
-      ${cssName(styles.input(t))}::placeholder {
-        color: ${t.inputPlaceholderColorLight};
-      }
-    `;
-  },
-
-  focusFallback(t: Theme) {
-    return css`
-      box-shadow: none;
-      outline: ${t.inputOutlineWidth} solid ${t.inputFocusOutline};
-    `;
-  },
-
-  placeholder(t: Theme) {
+  placeholder(p: InputStylesProps) {
     return css`
       -ms-user-select: none;
-      color: ${t.inputPlaceholderColor};
+      color: ${getPlaceholderColor(p)};
       cursor: text;
       font-size: inherit;
       height: 100%;
@@ -102,19 +317,15 @@ const styles = {
       user-select: none;
       white-space: nowrap;
       width: 100%;
-
-      ${cssName(styles.focus(t))} & {
-        color: ${t.inputPlaceholderColorLight};
-      }
     `;
   },
 
-  input(t: Theme) {
+  input(p: InputStylesProps) {
     return css`
       -webkit-appearance: none;
       background: transparent;
       border: 0 none;
-      color: ${t.inputTextColor};
+      color: ${getInputColor(p)};
       font: inherit;
       line-height: inherit;
       margin: 0;
@@ -123,6 +334,10 @@ const styles = {
       text-overflow: clip;
       white-space: nowrap;
       width: 100%;
+      pointer-events: ${getInputPointerEvents(p)};
+
+      /* fix text color in safari */
+      -webkit-text-fill-color: currentcolor;
 
       &:-moz-placeholder {
         opacity: 1;
@@ -134,72 +349,16 @@ const styles = {
         display: none;
       }
       &:-moz-placeholder {
-        color: ${t.inputPlaceholderColor};
+        color: ${getPlaceholderColor(p)};
+        -webkit-text-fill-color: ${getPlaceholderColor(p)};
       }
       &::-moz-placeholder {
-        color: ${t.inputPlaceholderColor};
+        color: ${getPlaceholderColor(p)};
+        -webkit-text-fill-color: ${getPlaceholderColor(p)};
       }
       &::placeholder {
-        color: ${t.inputPlaceholderColor};
-      }
-    `;
-  },
-
-  warning(t: Theme) {
-    return css`
-      & {
-        border-color: ${t.inputBorderColorWarning} !important;
-        box-shadow: 0 0 0 ${t.inputOutlineWidth} ${t.inputBorderColorWarning} !important;
-        z-index: 2;
-      }
-    `;
-  },
-
-  warningFallback(t: Theme) {
-    return css`
-      box-shadow: none !important;
-      outline: ${t.inputBorderWidth} solid ${t.inputBorderColorWarning} !important;
-    `;
-  },
-
-  error(t: Theme) {
-    return css`
-      border-color: ${t.inputBorderColorError} !important;
-      box-shadow: 0 0 0 ${t.inputOutlineWidth} ${t.inputBorderColorError} !important;
-      z-index: 2;
-    `;
-  },
-
-  errorFallback(t: Theme) {
-    return css`
-      box-shadow: none !important;
-      outline: ${t.inputBorderWidth} solid ${t.inputBorderColorError} !important;
-    `;
-  },
-
-  disabled(t: Theme) {
-    return css`
-      background: ${t.inputDisabledBg} !important;
-      border-color: ${t.inputDisabledBorderColor} !important;
-      box-shadow: none;
-
-      ${cssName(styles.icon())} {
-        cursor: default;
-      }
-      ${cssName(styles.input(t))} {
-        color: ${t.inputTextColorDisabled};
-        pointer-events: none;
-        /* fix text color in safari */
-        -webkit-text-fill-color: currentcolor;
-      }
-      ${cssName(styles.input(t))}:-moz-placeholder {
-        -webkit-text-fill-color: ${t.inputPlaceholderColor};
-      }
-      ${cssName(styles.input(t))}::-moz-placeholder {
-        -webkit-text-fill-color: ${t.inputPlaceholderColor};
-      }
-      ${cssName(styles.input(t))}::placeholder {
-        -webkit-text-fill-color: ${t.inputPlaceholderColor};
+        color: ${getPlaceholderColor(p)};
+        -webkit-text-fill-color: ${getPlaceholderColor(p)};
       }
     `;
   },
@@ -212,87 +371,6 @@ const styles = {
   `;
     return css`
       animation: ${blinkAnimation} 0.15s ease-in;
-    `;
-  },
-
-  sizeSmall(t: Theme) {
-    return css`
-      ${cssName(styles.root(t))}& {
-        font-size: ${t.inputFontSizeSmall};
-        line-height: ${t.inputLineHeightSmall} !important;
-        padding-top: ${t.inputPaddingYSmall};
-        padding-bottom: ${t.inputPaddingYSmall};
-        padding-left: ${t.inputPaddingXSmall};
-        padding-right: ${t.inputPaddingXSmall};
-        height: ${t.inputHeightSmall};
-        border-radius: ${t.inputBorderRadiusSmall};
-      }
-    `;
-  },
-
-  sizeSmallFallback(t: Theme) {
-    return css`
-      ${cssName(styles.root(t))}& {
-        padding-top: ${shift(t.inputPaddingYSmall, '-1')};
-        padding-bottom: ${shift(t.inputPaddingYSmall, '1')};
-        padding-left: ${t.inputPaddingXSmall};
-        padding-right: ${t.inputPaddingXSmall};
-        line-height: normal !important;
-      }
-    `;
-  },
-
-  sizeMedium(t: Theme) {
-    return css`
-      ${cssName(styles.root(t))}& {
-        font-size: ${t.inputFontSizeMedium};
-        line-height: ${t.inputLineHeightMedium};
-        padding-top: ${t.inputPaddingYMedium};
-        padding-bottom: ${t.inputPaddingYMedium};
-        padding-left: ${t.inputPaddingXMedium};
-        padding-right: ${t.inputPaddingXMedium};
-        height: ${t.inputHeightMedium};
-        border-radius: ${t.inputBorderRadiusMedium};
-      }
-    `;
-  },
-
-  sizeMediumFallback(t: Theme) {
-    return css`
-      ${cssName(styles.root(t))}& {
-        padding-top: ${shift(t.inputPaddingYMedium, '-1')};
-        padding-bottom: ${shift(t.inputPaddingYMedium, '1')};
-        padding-left: ${t.inputPaddingXMedium};
-        padding-right: ${t.inputPaddingXMedium};
-        line-height: normal !important;
-      }
-    `;
-  },
-
-  sizeLarge(t: Theme) {
-    return css`
-      ${cssName(styles.root(t))}& {
-        font-size: ${t.inputFontSizeLarge};
-        line-height: ${t.inputLineHeightLarge};
-        height: ${t.inputHeightLarge};
-        padding-top: ${shift(t.inputPaddingYLarge, '-1')};
-        padding-bottom: ${shift(t.inputPaddingYLarge, '1')};
-        padding-left: ${t.inputPaddingXLarge};
-        padding-right: ${t.inputPaddingXLarge};
-        border-radius: ${t.inputBorderRadiusLarge};
-      }
-    `;
-  },
-
-  sizeLargeFallback(t: Theme) {
-    return css`
-      ${cssName(styles.root(t))}& {
-        padding-top: ${shift(t.inputPaddingYLarge, '-2')};
-        padding-bottom: ${shift(t.inputPaddingYLarge, '2')};
-        padding-left: ${t.inputPaddingXLarge};
-        padding-right: ${t.inputPaddingXLarge};
-        line-height: normal !important;
-      }
     `;
   },
 
@@ -331,57 +409,31 @@ const styles = {
     `;
   },
 
-  icon() {
+  icon(p: InputStylesProps) {
+    const { t } = p;
     return css`
+      color: ${t.inputIconColor};
+      width: ${getIconWidth(p)}
       flex-shrink: 0;
-      cursor: text;
+      cursor: ${getIconCursor(p)};
       z-index: 2;
       text-align: center;
       box-sizing: content-box !important;
     `;
   },
 
-  leftIconSmall(t: Theme) {
+  leftIcon(p: InputStylesProps) {
     return css`
-      width: ${t.inputIconSizeSmall};
-      padding-right: ${t.inputIconGapSmall};
+      padding-right: ${getIconPaddingX(p)};
     `;
   },
 
-  rightIconSmall(t: Theme) {
+  rightIcon(p: InputStylesProps) {
     return css`
-      width: ${t.inputIconSizeSmall};
-      padding-left: ${t.inputIconGapSmall};
-    `;
-  },
-
-  leftIconMedium(t: Theme) {
-    return css`
-      width: ${t.inputIconSizeMedium};
-      padding-right: ${t.inputIconGapMedium};
-    `;
-  },
-
-  rightIconMedium(t: Theme) {
-    return css`
-      width: ${t.inputIconSizeMedium};
-      padding-left: ${t.inputIconGapMedium};
-    `;
-  },
-
-  leftIconLarge(t: Theme) {
-    return css`
-      width: ${t.inputIconSizeLarge};
-      padding-right: ${t.inputIconGapLarge};
-    `;
-  },
-
-  rightIconLarge(t: Theme) {
-    return css`
-      width: ${t.inputIconSizeLarge};
-      padding-left: ${t.inputIconGapLarge};
+      padding-left: ${getIconPaddingX(p)};
     `;
   },
 };
 
-export const jsStyles = memoizeStyle(styles);
+// export const jsStyles = memoizeStyle(styles);
+export const jsStyles = styles;

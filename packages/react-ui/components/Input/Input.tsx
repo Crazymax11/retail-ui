@@ -3,7 +3,6 @@ import React from 'react';
 import raf from 'raf';
 import cn from 'classnames';
 
-import { isIE11, isEdge } from '../../lib/utils';
 import { isKeyBackspace, isKeyDelete, someKeys } from '../../lib/events/keyboard/identifiers';
 import { polyfillPlaceholder } from '../../lib/polyfillPlaceholder';
 import { Nullable, Override } from '../../typings/utility-types';
@@ -11,7 +10,7 @@ import { MaskedInput } from '../../internal/MaskedInput';
 import { ThemeContext } from '../../lib/theming/ThemeContext';
 import { Theme } from '../../lib/theming/Theme';
 
-import { jsStyles } from './Input.styles';
+import { jsStyles, InputStylesProps } from './Input.styles';
 
 export type InputSize = 'small' | 'medium' | 'large';
 export type InputAlign = 'left' | 'center' | 'right';
@@ -273,19 +272,11 @@ export class Input extends React.Component<InputProps, InputState> {
       ...rest
     } = this.props;
 
-    const { blinking, focused } = this.state;
+    const { blinking } = this.state;
 
     const labelProps = {
-      className: cn(jsStyles.root(this.theme), this.getSizeClassName(), {
-        [jsStyles.borderless()]: !!borderless,
-        [jsStyles.focus(this.theme)]: focused,
+      className: cn(jsStyles.root(this.getStylesProps()), {
         [jsStyles.blink(this.theme)]: !!blinking,
-        [jsStyles.warning(this.theme)]: !!warning,
-        [jsStyles.error(this.theme)]: !!error,
-        [jsStyles.disabled(this.theme)]: !!disabled,
-        [jsStyles.focusFallback(this.theme)]: focused && (isIE11 || isEdge),
-        [jsStyles.warningFallback(this.theme)]: !!warning && (isIE11 || isEdge),
-        [jsStyles.errorFallback(this.theme)]: !!error && (isIE11 || isEdge),
       }),
       style: { width },
       onMouseEnter,
@@ -295,7 +286,7 @@ export class Input extends React.Component<InputProps, InputState> {
 
     const inputProps = {
       ...rest,
-      className: jsStyles.input(this.theme),
+      className: jsStyles.input(this.getStylesProps()),
       value,
       onChange: this.handleChange,
       onFocus: this.handleFocus,
@@ -353,44 +344,22 @@ export class Input extends React.Component<InputProps, InputState> {
     );
   }
 
-  private getIconSizeClassname(right = false) {
-    switch (this.props.size) {
-      case 'large':
-        return right ? jsStyles.rightIconLarge(this.theme) : jsStyles.leftIconLarge(this.theme);
-      case 'medium':
-        return right ? jsStyles.rightIconMedium(this.theme) : jsStyles.leftIconMedium(this.theme);
-      case 'small':
-      default:
-        return right ? jsStyles.rightIconSmall(this.theme) : jsStyles.leftIconSmall(this.theme);
-    }
-  }
-
   private renderLeftIcon() {
-    return this.renderIcon(this.props.leftIcon, this.getIconSizeClassname());
+    return this.renderIcon(this.props.leftIcon, jsStyles.leftIcon(this.getStylesProps()));
   }
 
   private renderRightIcon() {
-    return this.renderIcon(this.props.rightIcon, this.getIconSizeClassname(true));
+    return this.renderIcon(this.props.rightIcon, jsStyles.rightIcon(this.getStylesProps()));
   }
 
-  private renderIcon(icon: InputIconType, sizeClassName: string) {
+  private renderIcon(icon: InputIconType, sideClassName: string) {
     if (!icon) {
       return null;
     }
 
-    if (icon instanceof Function) {
-      return <span className={cn(jsStyles.icon(), sizeClassName)}>{icon()}</span>;
-    }
-
     return (
-      <span
-        className={cn(
-          cn(jsStyles.icon(), sizeClassName),
-          jsStyles.useDefaultColor(this.theme),
-          jsStyles.useDefaultColor(this.theme),
-        )}
-      >
-        {icon}
+      <span className={cn(jsStyles.icon(this.getStylesProps()), sideClassName)}>
+        {icon instanceof Function ? icon() : icon}
       </span>
     );
   }
@@ -401,7 +370,7 @@ export class Input extends React.Component<InputProps, InputState> {
     if (this.state.polyfillPlaceholder && this.props.placeholder && !this.isMaskVisible && !this.props.value) {
       placeholder = (
         <div
-          className={cn(jsStyles.placeholder(this.theme), jsStyles.placeholder(this.theme))}
+          className={cn(jsStyles.placeholder(this.getStylesProps()))}
           style={{ textAlign: this.props.align || 'inherit' }}
         >
           {this.props.placeholder}
@@ -410,18 +379,6 @@ export class Input extends React.Component<InputProps, InputState> {
     }
 
     return placeholder;
-  }
-
-  private getSizeClassName() {
-    switch (this.props.size) {
-      case 'large':
-        return { [jsStyles.sizeLarge(this.theme)]: true, [jsStyles.sizeLargeFallback(this.theme)]: isIE11 || isEdge };
-      case 'medium':
-        return { [jsStyles.sizeMedium(this.theme)]: true, [jsStyles.sizeMediumFallback(this.theme)]: isIE11 || isEdge };
-      case 'small':
-      default:
-        return { [jsStyles.sizeSmall(this.theme)]: true, [jsStyles.sizeSmallFallback(this.theme)]: isIE11 || isEdge };
-    }
   }
 
   private refInput = (element: HTMLInputElement | MaskedInput | null) => {
@@ -526,5 +483,19 @@ export class Input extends React.Component<InputProps, InputState> {
     }
 
     return <span className={jsStyles.suffix(this.theme)}>{suffix}</span>;
+  };
+
+  private getStylesProps = (): InputStylesProps => {
+    const { borderless, size, error, warning, disabled } = this.props;
+    const { focused: focus } = this.state;
+    return {
+      t: this.theme,
+      borderless,
+      size,
+      focus,
+      error,
+      warning,
+      disabled,
+    };
   };
 }
